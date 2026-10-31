@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* 本应用只提供浅色主题：禁止浏览器/PWA 按系统偏好自动变暗，
+   避免出现"黑底白卡白字"的混乱效果 */
+:root {
+  color-scheme: light only;
+  --background: #f9fafb;
+  --foreground: #111827;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    Arial, sans-serif;
+}
+
+/* ===== 页面切换动画（View Transitions API） ===== */
+
+/* 底部导航独立成层：切换期间保持静止，不参与页面滑动 */
+nav {
+  view-transition-name: tab-bar;
+}
+
+/* 方向由 src/lib/vt.ts 在点击时写到 <html data-vt>，先于过渡快照生效 */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 320ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* 目标在右侧：内容向左滑，旧页视差滑出，新页满幅从右进入 */
+  html[data-vt="left"]::view-transition-old(root) {
+    animation-name: vt-out-left;
+  }
+  html[data-vt="left"]::view-transition-new(root) {
+    animation-name: vt-in-right;
+  }
+
+  /* 目标在左侧：镜像反向 */
+  html[data-vt="right"]::view-transition-old(root) {
+    animation-name: vt-out-right;
+  }
+  html[data-vt="right"]::view-transition-new(root) {
+    animation-name: vt-in-left;
+  }
+
+  /* data-vt="none"（同页/未知目标）：走默认交叉淡入淡出，仅应用上面的时长与曲线 */
+}
+
+@keyframes vt-out-left {
+  to {
+    transform: translateX(-30%);
+    opacity: 0.6;
+  }
+}
+@keyframes vt-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes vt-out-right {
+  to {
+    transform: translateX(30%);
+    opacity: 0.6;
+  }
+}
+@keyframes vt-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
